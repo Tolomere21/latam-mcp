@@ -1,0 +1,61 @@
+app = "latam-mcp-api"
+primary_region = "gru"
+
+[build]
+  dockerfile = "../infra/Dockerfile"
+
+[env]
+  PORT = "8787"
+  NODE_ENV = "production"
+  SUNAT_UPSTREAM = "padron"
+  SBS_UPSTREAM = "direct"
+  SEACE_UPSTREAM = "stub"
+  PADRON_DB_PATH = "/data/padron.sqlite"
+  PADRON_WORK_DIR = "/data/ingest-tmp"
+  EMAIL_FROM = "LATAM-MCP <hello@latam-mcp.com>"
+  INGEST_SCHEDULE_ENABLED = "1"
+
+[mounts]
+  source = "padron_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8787
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    grace_period = "5s"
+    interval = "30s"
+    method = "GET"
+    path = "/healthz"
+    timeout = "5s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "1024mb"
+  cpus = 1
+
+# --- Operator notes ---
+#
+# Ingest is not a long-running process — it runs once a day to refresh the
+# padrón, then exits. It shares the same Docker image as the api but invokes
+# a different entrypoint. Managed separately via `fly machine run`:
+#
+#   fly machine run . \
+#     --app latam-mcp-api \
+#     --region scl \
+#     --schedule daily \
+#     --volume padron_data:/data \
+#     -- node apps/ingest/dist/index.js
+#
+# To run the initial ingest once (before scheduling):
+#
+#   fly machine run . \
+#     --app latam-mcp-api \
+#     --region scl \
+#     --volume padron_data:/data \
+#     --rm \
+#     -- node apps/ingest/dist/index.js

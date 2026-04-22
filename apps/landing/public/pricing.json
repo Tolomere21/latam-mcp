@@ -1,0 +1,39 @@
+{
+  "$schema": "https://latam-mcp.com/schema/pricing.v1.json",
+  "service": "latam-mcp",
+  "currency": "USD",
+  "per_call_usd": 0.002,
+  "plans": [
+    {
+      "id": "free",
+      "label": "Free",
+      "price_usd_month": 0,
+      "included_calls": 1000,
+      "rate_rps": 10,
+      "webhooks": false,
+      "card_required": false
+    },
+    {
+      "id": "indie",
+      "label": "Indie",
+      "price_usd_month": 19,
+      "included_calls": 25000,
+      "rate_rps": 50,
+      "webhooks": false,
+      "card_required": true
+    },
+    {
+      "id": "scale",
+      "label": "Scale",
+      "price_usd_month": 99,
+      "included_calls": 250000,
+      "rate_rps": 200,
+      "webhooks": true,
+      "card_required": true
+    }
+  ],
+  "overage_usd_per_call": 0.002,
+  "annual_discount": "2 months free",
+  "billing": "lemonsqueezy_payment_links",
+  "updated_at": "2026-04-18"
+}

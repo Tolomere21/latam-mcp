@@ -1,0 +1,53 @@
+{
+  "name": "@latam-mcp/mcp",
+  "version": "0.1.0",
+  "description": "MCP server for LATAM-MCP — Peruvian public-data API. Exposes SUNAT RUC lookups, BCRP exchange rates, and SEACE tender search as tools for Claude, Cursor, and any MCP client.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Tolomere21/latam-mcp.git",
+    "directory": "apps/mcp"
+  },
+  "homepage": "https://latam-mcp.com",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "latam",
+    "peru",
+    "sunat",
+    "bcrp",
+    "ruc",
+    "fx",
+    "claude",
+    "cursor",
+    "ai-agent"
+  ],
+  "type": "module",
+  "bin": {
+    "latam-mcp": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@latam-mcp/schemas": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "@types/node": "^20.17.9"
+  }
+}

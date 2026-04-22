@@ -1,0 +1,49 @@
+{
+  "name": "@latam-mcp/schemas",
+  "version": "0.1.0",
+  "description": "Shared Zod schemas for LATAM-MCP — Peruvian public-data API. Types for SUNAT RUC lookups, BCRP exchange rates, SEACE tenders, and the common error envelope.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Tolomere21/latam-mcp.git",
+    "directory": "packages/schemas"
+  },
+  "homepage": "https://latam-mcp.com",
+  "keywords": [
+    "latam",
+    "peru",
+    "sunat",
+    "bcrp",
+    "ruc",
+    "zod",
+    "schemas",
+    "typescript"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}

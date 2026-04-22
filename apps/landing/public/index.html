@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LATAM-MCP — Peru public-data API for AI agents</title>
+    <meta
+      name="description"
+      content="Clean, MCP-ready API for Peruvian public data: SUNAT RUC lookup, SBS exchange rates, SEACE tenders. Flat per-call pricing, llms.txt, OpenAPI 3.1."
+    />
+    <link rel="alternate" type="application/llms+txt" href="/llms.txt" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --fg: #0b0f0e;
+        --bg: #fcfcfa;
+        --muted: #535c5a;
+        --accent: #0e7c66;
+        --border: #d7dad6;
+        --code-bg: #f2f3ee;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --fg: #e8ebe6;
+          --bg: #0e1211;
+          --muted: #a6ada9;
+          --accent: #4cd6b5;
+          --border: #252b29;
+          --code-bg: #181d1b;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        line-height: 1.55;
+      }
+      main {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem 5rem;
+      }
+      h1 {
+        font-size: 2.25rem;
+        line-height: 1.15;
+        margin: 0 0 1rem;
+        letter-spacing: -0.01em;
+      }
+      h2 {
+        font-size: 1.25rem;
+        margin-top: 2.75rem;
+        margin-bottom: 0.75rem;
+      }
+      p.lede {
+        font-size: 1.1rem;
+        color: var(--muted);
+        margin: 0 0 2rem;
+      }
+      code,
+      pre {
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        font-size: 0.92em;
+      }
+      pre {
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 1rem;
+        overflow-x: auto;
+      }
+      code.inline {
+        background: var(--code-bg);
+        padding: 0.1em 0.35em;
+        border-radius: 3px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 0.55rem 0.5rem;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.95rem;
+      }
+      th {
+        color: var(--muted);
+        font-weight: 600;
+      }
+      form {
+        display: flex;
+        gap: 0.5rem;
+        margin: 1rem 0 0;
+        flex-wrap: wrap;
+      }
+      input[type="email"] {
+        flex: 1 1 260px;
+        padding: 0.6rem 0.8rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--bg);
+        color: var(--fg);
+        font-size: 1rem;
+      }
+      button {
+        padding: 0.6rem 1rem;
+        border: 0;
+        border-radius: 6px;
+        background: var(--accent);
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .btn-subscribe {
+        display: inline-block;
+        padding: 0.4rem 0.9rem;
+        border-radius: 5px;
+        background: var(--accent);
+        color: white !important;
+        font-weight: 600;
+        font-size: 0.88rem;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+      .btn-subscribe:hover {
+        filter: brightness(1.1);
+      }
+      .btn-secondary {
+        background: transparent;
+        color: var(--accent) !important;
+        border: 1px solid var(--border);
+      }
+      footer {
+        margin-top: 4rem;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      a {
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>LATAM-MCP</h1>
+      <p class="lede">
+        The agent-ready API for Peruvian public data — SUNAT RUC, BCRP exchange rates, SEACE
+        tenders. Sourced directly from <a href="/compliance.html">official open-data releases</a>.
+        No scraping. No captcha bypass. No third-party vendors.
+        Flat per-call pricing, <a href="/llms.txt">llms.txt</a>, OpenAPI 3.1, and a first-class MCP
+        server for Claude, Cursor, and any MCP client.
+      </p>
+
+      <h2>Endpoints (v1)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Route</th>
+            <th>Returns</th>
+            <th>Cache</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code class="inline">GET /pe/ruc/{ruc}</code></td>
+            <td>Razón social, estado, condición, domicilio, actividad económica</td>
+            <td>24h</td>
+          </tr>
+          <tr>
+            <td><code class="inline">GET /pe/fx/rates</code></td>
+            <td>USD/PEN, EUR/PEN buy &amp; sell, historical</td>
+            <td>12h</td>
+          </tr>
+          <tr>
+            <td><code class="inline">GET /pe/fx/indicators</code></td>
+            <td>TEA, TIPMN, TAMN interest indices, historical</td>
+            <td>12h</td>
+          </tr>
+          <tr>
+            <td><code class="inline">GET /pe/seace/tenders</code></td>
+            <td>Gov procurement search + diff webhook</td>
+            <td>1h</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Pricing</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Plan</th>
+            <th>Monthly</th>
+            <th>Included calls</th>
+            <th>Rate limit</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Free</td>
+            <td>$0</td>
+            <td>1,000</td>
+            <td>10 rps</td>
+            <td><a class="btn-subscribe btn-secondary" href="#waitlist">Sign up</a></td>
+          </tr>
+          <tr>
+            <td>Indie</td>
+            <td>$19</td>
+            <td>25,000</td>
+            <td>50 rps</td>
+            <td><a class="btn-subscribe" href="https://latam-mcp.lemonsqueezy.com/checkout/buy/811732a4-6bd0-4cc9-ac22-8418fd024359" data-plan="indie">Subscribe</a></td>
+          </tr>
+          <tr>
+            <td>Scale</td>
+            <td>$99</td>
+            <td>250,000</td>
+            <td>200 rps (webhooks)</td>
+            <td><a class="btn-subscribe" href="https://latam-mcp.lemonsqueezy.com/checkout/buy/aa8adcce-2442-451f-b3ab-7a377c497f48" data-plan="scale">Subscribe</a></td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Overage: <strong>$0.002/call</strong> flat. Billed through
+        <a href="https://lemonsqueezy.com" target="_blank">Lemon Squeezy</a> (merchant of record —
+        they handle global tax). Machine-readable pricing at
+        <a href="/pricing.json">/pricing.json</a>.
+      </p>
+
+      <h2>Example</h2>
+      <pre><code>curl https://api.latam-mcp.com/pe/ruc/20100017491 \
+  -H "authorization: Bearer $LATAM_MCP_KEY"</code></pre>
+
+      <h2 id="waitlist">Get early access</h2>
+      <p>
+        Drop your email — we'll send your free-tier API key (1,000 calls/mo, no card required)
+        as soon as v1 is live.
+      </p>
+      <form method="POST" action="https://formspree.io/f/xgoryjrd">
+        <input type="email" name="email" placeholder="you@example.com" required />
+        <button type="submit">Send me my API key</button>
+      </form>
+
+      <footer>
+        <p>
+          Built for AI agents. <a href="/llms.txt">llms.txt</a> ·
+          <a href="/pricing.json">pricing.json</a> ·
+          <a href="/openapi.json">openapi.json</a> ·
+          <a href="/compliance.html">compliance</a>
+        </p>
+      </footer>
+    </main>
+  </body>
+</html>

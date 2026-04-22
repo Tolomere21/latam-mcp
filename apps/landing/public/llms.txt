@@ -1,0 +1,115 @@
+# LATAM-MCP
+
+> The agent-ready API for Peruvian public data. Sourced directly from SUNAT's officially-published open-data releases. No scraping, no captcha bypass, no third-party vendors. Flat per-call pricing, OpenAPI 3.1, first-party MCP server.
+
+## Data sources & legal basis
+
+- **SUNAT RUC** — served from our indexed copy of the [Padrón Reducido del RUC](https://www.sunat.gob.pe/descargaPRR/mrc137_padron_reducido.html), refreshed daily. Published under Peru's [Ley de Transparencia](https://www.opengovpartnership.org/members/peru/commitments/PE0062/) and hosted on the national open-data portal. Commercial reuse is explicitly permitted.
+- **SBS exchange rates** — served via [BCRP's open JSON API](https://estadisticas.bcrp.gob.pe/estadisticas/series/ayuda/api) (Banco Central de Reserva del Perú), the authoritative source for Peruvian financial data.
+- **SEACE tenders** — v1.1 (currently stub).
+
+No DNI, no RENIEC, no personal-identity data. Natural-person RUCs (prefix `10`) have `razon_social` masked to comply with Peru's Ley 29733.
+
+## Endpoints
+
+All data endpoints require `Authorization: Bearer <API_KEY>`.
+
+### GET /pe/ruc/{ruc}
+
+SUNAT RUC lookup from the padrón. `ruc` must be 11 digits. Freshness: ≤24h.
+
+```bash
+curl https://api.latam-mcp.com/pe/ruc/20100017491 -H "authorization: Bearer $KEY"
+```
+
+Returns: `{ruc, razon_social, estado, condicion, domicilio, actividad_economica, fecha_inscripcion, fetched_at, stale}`.
+
+### GET /pe/fx/rates?date=YYYY-MM-DD
+
+BCRP exchange rates (USD/PEN, EUR/PEN buy & sell). `date` optional; omit for latest published day.
+
+```bash
+curl "https://api.latam-mcp.com/pe/fx/rates?date=2026-04-15" -H "authorization: Bearer $KEY"
+```
+
+Returns: `{date, rates: [{pair, buy, sell}], fetched_at, stale}`.
+
+### GET /pe/fx/indicators?type={tea,tipmn,tamn}&date=YYYY-MM-DD
+
+SBS interest-rate indicators (v1 stub; live wiring v1.1).
+
+### GET /pe/seace/tenders?query=&region=&since=&limit=
+
+SEACE government procurement search (v1 stub; live scraper v1.1). Scale plan will support webhook subscriptions.
+
+### GET /me/usage
+
+Current month's call count + plan info.
+
+## Auth
+
+Send `Authorization: Bearer <API_KEY>`. Get a key by signing up on the landing page. Free tier has 1,000 calls/mo.
+
+## Errors
+
+All errors return:
+
+```json
+{"error": {"code": "...", "message": "...", "retry_after_s": 0, "upstream_status": 0}}
+```
+
+Codes: `invalid_ruc`, `invalid_query`, `unauthorized`, `rate_limited`, `upstream_unavailable`, `not_found`, `service_unavailable`, `internal_error`.
+
+## Caching
+
+- `X-Cache: HIT|MISS|STALE` on every response.
+- `X-Cache-Stale: true` when returning stale due to upstream failure.
+- `X-Usage-Calls`, `X-Usage-Limit`, `X-Response-Time-Ms` on every response.
+
+## Pricing
+
+Machine-readable at `/pricing.json`.
+
+| Plan | $/mo | Calls/mo | Rate | Webhooks |
+|---|---|---|---|---|
+| Free | 0 | 1,000 | 10 rps | no |
+| Indie | 19 | 25,000 | 50 rps | no |
+| Scale | 99 | 250,000 | 200 rps | yes |
+
+Overage: $0.002/call flat. Annual plans get 2 months free.
+
+## OpenAPI
+
+Full schema at `/openapi.json` (OpenAPI 3.1).
+
+## MCP
+
+```bash
+npx -y @latam-mcp/mcp
+```
+
+Claude Desktop config:
+
+```json
+{
+  "mcpServers": {
+    "latam-mcp": {
+      "command": "npx",
+      "args": ["-y", "@latam-mcp/mcp"],
+      "env": { "LATAM_MCP_API_KEY": "YOUR_KEY" }
+    }
+  }
+}
+```
+
+Tools: `pe_ruc_lookup`, `pe_fx_rates`, `pe_fx_indicators`, `pe_seace_search`.
+
+## Compliance posture
+
+- Data is sourced from **official public releases**, not scraped.
+- No security measures are bypassed (relevant to Ley 30096).
+- No personal-identity (DNI) data is processed.
+- Natural-person RUCs (prefix 10) are masked.
+- Customers remain responsible for their own jurisdiction's data-use rules when querying our API.
+
+See `/compliance.html` for the full legal statement.

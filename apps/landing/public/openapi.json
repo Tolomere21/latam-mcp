@@ -1,0 +1,282 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "LATAM-MCP",
+    "version": "0.0.0",
+    "description": "Peruvian public-data API for AI agents. Sourced directly from SUNAT's padrón reducido (daily open-data release) and BCRP's open JSON API. No scraping, no captcha bypass, no vendor dependencies. Agent-friendly errors, flat per-call pricing, MCP server. See /compliance.html for legal basis.",
+    "contact": { "url": "https://latam-mcp.com" }
+  },
+  "servers": [{ "url": "https://api.latam-mcp.com" }],
+  "security": [{ "bearer": [] }],
+  "paths": {
+    "/healthz": {
+      "get": {
+        "summary": "Health probe",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "ok": { "type": "boolean" }, "service": { "type": "string" } }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pricing.json": {
+      "get": {
+        "summary": "Machine-readable pricing",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Pricing document",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          }
+        }
+      }
+    },
+    "/pe/ruc/{ruc}": {
+      "get": {
+        "summary": "SUNAT RUC lookup",
+        "parameters": [
+          {
+            "name": "ruc",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "pattern": "^\\d{11}$" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Company record",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/RucResponse" } }
+            }
+          },
+          "400": { "$ref": "#/components/responses/Error" },
+          "401": { "$ref": "#/components/responses/Error" },
+          "429": { "$ref": "#/components/responses/Error" },
+          "502": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/pe/fx/rates": {
+      "get": {
+        "summary": "SBS exchange rates",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "FX rates",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FxRatesResponse" } }
+            }
+          },
+          "400": { "$ref": "#/components/responses/Error" },
+          "401": { "$ref": "#/components/responses/Error" },
+          "429": { "$ref": "#/components/responses/Error" },
+          "502": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/pe/fx/indicators": {
+      "get": {
+        "summary": "SBS financial indicators",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "enum": ["tea", "tipmn", "tamn"] }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Indicator",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FxIndicatorsResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/Error" },
+          "401": { "$ref": "#/components/responses/Error" },
+          "429": { "$ref": "#/components/responses/Error" },
+          "502": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/pe/seace/tenders": {
+      "get": {
+        "summary": "SEACE government tenders search",
+        "parameters": [
+          { "name": "query", "in": "query", "schema": { "type": "string" } },
+          { "name": "region", "in": "query", "schema": { "type": "string" } },
+          { "name": "since", "in": "query", "schema": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 25 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tender list",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TenderSearchResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/Error" },
+          "401": { "$ref": "#/components/responses/Error" },
+          "429": { "$ref": "#/components/responses/Error" },
+          "502": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/me/usage": {
+      "get": {
+        "summary": "Current month usage for the authenticated key",
+        "responses": {
+          "200": {
+            "description": "Usage",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["plan", "calls_this_month", "included_calls", "month"],
+                  "properties": {
+                    "key_id": { "type": "string" },
+                    "plan": { "type": "string", "enum": ["free", "indie", "scale"] },
+                    "rate_rps": { "type": "integer" },
+                    "included_calls": { "type": "integer" },
+                    "month": { "type": "string" },
+                    "calls_this_month": { "type": "integer" },
+                    "overage": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RucResponse": {
+        "type": "object",
+        "required": ["ruc", "razon_social", "estado", "condicion", "fetched_at", "stale"],
+        "properties": {
+          "ruc": { "type": "string" },
+          "razon_social": { "type": "string" },
+          "estado": { "type": "string" },
+          "condicion": { "type": "string" },
+          "domicilio": { "type": ["string", "null"] },
+          "actividad_economica": { "type": ["string", "null"] },
+          "fecha_inscripcion": { "type": ["string", "null"] },
+          "fetched_at": { "type": "string", "format": "date-time" },
+          "stale": { "type": "boolean" }
+        }
+      },
+      "FxRatesResponse": {
+        "type": "object",
+        "required": ["date", "rates", "fetched_at", "stale"],
+        "properties": {
+          "date": { "type": "string" },
+          "rates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["pair", "buy", "sell"],
+              "properties": {
+                "pair": { "type": "string", "enum": ["USD/PEN", "EUR/PEN"] },
+                "buy": { "type": "number" },
+                "sell": { "type": "number" }
+              }
+            }
+          },
+          "fetched_at": { "type": "string", "format": "date-time" },
+          "stale": { "type": "boolean" }
+        }
+      },
+      "FxIndicatorsResponse": {
+        "type": "object",
+        "required": ["type", "date", "value", "unit", "fetched_at", "stale"],
+        "properties": {
+          "type": { "type": "string", "enum": ["tea", "tipmn", "tamn"] },
+          "date": { "type": "string" },
+          "value": { "type": "number" },
+          "unit": { "type": "string" },
+          "fetched_at": { "type": "string", "format": "date-time" },
+          "stale": { "type": "boolean" }
+        }
+      },
+      "Tender": {
+        "type": "object",
+        "required": ["id", "title", "entity", "published_at", "url"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "entity": { "type": "string" },
+          "region": { "type": ["string", "null"] },
+          "published_at": { "type": "string", "format": "date-time" },
+          "deadline": { "type": ["string", "null"], "format": "date-time" },
+          "amount_pen": { "type": ["number", "null"] },
+          "url": { "type": "string", "format": "uri" }
+        }
+      },
+      "TenderSearchResponse": {
+        "type": "object",
+        "required": ["results", "fetched_at", "stale"],
+        "properties": {
+          "results": { "type": "array", "items": { "$ref": "#/components/schemas/Tender" } },
+          "fetched_at": { "type": "string", "format": "date-time" },
+          "stale": { "type": "boolean" }
+        }
+      },
+      "ErrorEnvelope": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": ["code", "message"],
+            "properties": {
+              "code": { "type": "string" },
+              "message": { "type": "string" },
+              "retry_after_s": { "type": "integer" },
+              "upstream_status": { "type": "integer" }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "Error": {
+        "description": "Error envelope",
+        "content": {
+          "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearer": { "type": "http", "scheme": "bearer" }
+    }
+  }
+}

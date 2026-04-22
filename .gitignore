@@ -1,0 +1,29 @@
+# This file is renamed to `.gitignore` by publish.sh when syncing to the
+# public repo. Kept separate from the internal `.gitignore` so the public
+# version never hints at the existence of internal-only files.
+
+node_modules
+dist
+*.tsbuildinfo
+*.log
+
+.env
+.env.local
+.env.*.local
+
+.DS_Store
+.idea/
+.vscode/
+
+coverage
+.nyc_output
+.turbo
+.vercel
+.wrangler
+.fly
+
+data/
+**/*.sqlite
+**/*.sqlite-journal
+**/*.sqlite-wal
+**/*.sqlite-shm

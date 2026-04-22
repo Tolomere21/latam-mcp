@@ -1,0 +1,20 @@
+{
+  "name": "latam-mcp",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=20.10"
+  },
+  "scripts": {
+    "build": "pnpm -r --filter './packages/*' --filter './apps/*' build",
+    "typecheck": "pnpm -r typecheck",
+    "dev:api": "pnpm --filter @latam-mcp/schemas build && pnpm --filter @latam-mcp/api dev",
+    "dev:mcp": "pnpm --filter @latam-mcp/schemas build && pnpm --filter @latam-mcp/mcp dev",
+    "ingest": "pnpm --filter @latam-mcp/ingest start",
+    "seed": "pnpm --filter @latam-mcp/ingest seed"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "better-sqlite3"]
+  }
+}

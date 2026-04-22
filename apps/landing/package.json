@@ -1,0 +1,9 @@
+{
+  "name": "@latam-mcp/landing",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node -e \"require('http').createServer((req,res)=>{const fs=require('fs');const p=require('path');let f=p.join(__dirname,'public',req.url==='/'?'index.html':req.url);fs.readFile(f,(e,d)=>{if(e){res.writeHead(404);return res.end('not found')}const ext=p.extname(f);const t={'.html':'text/html','.json':'application/json','.txt':'text/plain; charset=utf-8'}[ext]||'application/octet-stream';res.writeHead(200,{'content-type':t});res.end(d)})}).listen(process.env.PORT||4321,()=>console.log('landing http://localhost:'+(process.env.PORT||4321)))\"",
+    "typecheck": "echo 'landing is static'"
+  }
+}

@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LATAM-MCP — Compliance &amp; Data Sources</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --fg: #0b0f0e;
+        --bg: #fcfcfa;
+        --muted: #535c5a;
+        --accent: #0e7c66;
+        --border: #d7dad6;
+        --code-bg: #f2f3ee;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --fg: #e8ebe6;
+          --bg: #0e1211;
+          --muted: #a6ada9;
+          --accent: #4cd6b5;
+          --border: #252b29;
+          --code-bg: #181d1b;
+        }
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        line-height: 1.6;
+      }
+      main {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem 5rem;
+      }
+      h1 {
+        font-size: 2rem;
+        margin: 0 0 0.5rem;
+        letter-spacing: -0.01em;
+      }
+      h2 {
+        font-size: 1.2rem;
+        margin-top: 2.5rem;
+      }
+      p.lede {
+        color: var(--muted);
+        margin: 0 0 2rem;
+      }
+      a { color: var(--accent); }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+      }
+      th, td {
+        text-align: left;
+        padding: 0.5rem 0.5rem;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.95rem;
+        vertical-align: top;
+      }
+      th { color: var(--muted); font-weight: 600; }
+      code {
+        background: var(--code-bg);
+        padding: 0.1em 0.35em;
+        border-radius: 3px;
+        font-family: ui-monospace, monospace;
+        font-size: 0.92em;
+      }
+      footer {
+        margin-top: 4rem;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Compliance &amp; Data Sources</h1>
+      <p class="lede">
+        Short version: we don't scrape. We serve public data that SUNAT and BCRP already publish.
+        Here's exactly what we do, what we don't, and why.
+      </p>
+
+      <h2>Where the data comes from</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Endpoint</th>
+            <th>Source</th>
+            <th>Legal basis</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>/pe/ruc/{ruc}</code></td>
+            <td>
+              <a href="https://www.sunat.gob.pe/descargaPRR/mrc137_padron_reducido.html" target="_blank">
+                SUNAT Padrón Reducido del RUC
+              </a>
+              — official daily open-data release, ~384 MB ZIP. We download and re-index it daily.
+            </td>
+            <td>
+              Published under Peru's Ley de Transparencia y Acceso a la Información Pública (Ley
+              27806) and hosted on the national open-data portal. Commercial reuse explicitly
+              permitted under Peru's
+              <a href="https://www.opengovpartnership.org/members/peru/commitments/PE0062/" target="_blank">Open Government Partnership commitment PE0062</a>.
+            </td>
+          </tr>
+          <tr>
+            <td><code>/pe/fx/rates</code></td>
+            <td>
+              <a href="https://estadisticas.bcrp.gob.pe/estadisticas/series/ayuda/api" target="_blank">
+                BCRP (Banco Central de Reserva del Perú)
+              </a>
+              open JSON API — same SBS-sourced exchange rates.
+            </td>
+            <td>Authoritative government-published statistical series, open API, no auth required.</td>
+          </tr>
+          <tr>
+            <td><code>/pe/fx/indicators</code></td>
+            <td>Stub in v1. Live implementation (BCRP indicator series) planned for v1.1.</td>
+            <td>Same as FX rates.</td>
+          </tr>
+          <tr>
+            <td><code>/pe/seace/tenders</code></td>
+            <td>Stub in v1. SEACE procurement data is open-government per Peru's SEACE regulations; v1.1 will ingest from their official feeds.</td>
+            <td>Open by law for government procurement.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>What we explicitly don't do</h2>
+      <ul>
+        <li>
+          <strong>No DNI / RENIEC / personal-identity lookups.</strong> Peru's Ley 29733 (personal
+          data protection) requires authorization to resell DNI data commercially. We don't have
+          that authorization and we won't operate without it. This is a hard line.
+        </li>
+        <li>
+          <strong>No scraping of captcha-gated portals.</strong> SUNAT's e-consulta RUC portal
+          added reCAPTCHA v3 in 2026; bypassing it could fall under Ley 30096 (delitos
+          informáticos). We route around the problem by using the official padrón, which has no
+          captcha because it's designed for distribution.
+        </li>
+        <li>
+          <strong>No mass scraping of anyone's server.</strong> Our only recurring fetch is one
+          daily download of SUNAT's own ZIP, and periodic polls of BCRP's public API. Both
+          consistent with each service's intended distribution model.
+        </li>
+      </ul>
+
+      <h2>Natural-person RUC masking</h2>
+      <p>
+        RUCs that start with <code>10</code> belong to natural persons (sole proprietors, in most
+        cases). Even though these appear in the public padrón, we mask the <code>razon_social</code>
+        field to <code>"[natural person — masked]"</code> before returning the record, as a
+        defence-in-depth measure against accidental PII leakage via our API. Business RUCs
+        (prefix <code>20</code> and others) return in full.
+      </p>
+
+      <h2>Customer responsibility</h2>
+      <p>
+        You remain responsible for compliance in your own jurisdiction. Specifically:
+      </p>
+      <ul>
+        <li>
+          If you re-display data to end-users in a regulated context (KYB, AML,
+          account-opening), verify your regulator's requirements independently.
+        </li>
+        <li>
+          If you process any data we return in a way that triggers Peru's Ley 29733 (e.g. combining
+          our output with other data to identify natural persons), the processing obligations fall
+          on you, not on us.
+        </li>
+        <li>
+          If you use the data to make adverse decisions about individuals, comply with Peru's
+          anti-discrimination and data-subject-rights rules.
+        </li>
+      </ul>
+
+      <h2>Data freshness</h2>
+      <p>
+        The RUC padrón refreshes daily. Response bodies include <code>fetched_at</code>
+        (when our cache was populated) and <code>stale: true</code> if we had to serve a stale copy
+        because SUNAT's publication was unavailable that day. For sub-24h freshness needs, this API
+        is not the right tool.
+      </p>
+
+      <h2>Questions</h2>
+      <p>
+        Reach out at <a href="mailto:hello@latam-mcp.com">hello@latam-mcp.com</a>. If you're a
+        compliance officer reviewing this for your organization, I'm happy to get on a call and
+        walk through the architecture.
+      </p>
+
+      <footer>
+        <p>
+          <a href="/">&larr; Home</a> ·
+          <a href="/llms.txt">llms.txt</a> ·
+          <a href="/openapi.json">openapi.json</a> ·
+          <a href="/pricing.json">pricing.json</a>
+        </p>
+      </footer>
+    </main>
+  </body>
+</html>
