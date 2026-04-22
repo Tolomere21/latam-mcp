@@ -1,6 +1,7 @@
 {
   "name": "@latam-mcp/mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
+  "mcpName": "io.github.Tolomere21/latam-mcp",
   "description": "MCP server for LATAM-MCP — Peruvian public-data API. Exposes SUNAT RUC lookups, BCRP exchange rates, and SEACE tender search as tools for Claude, Cursor, and any MCP client.",
   "license": "MIT",
   "repository": {
